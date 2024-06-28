@@ -58,17 +58,13 @@ def agregar_txt_num_log(texto, number, flow = 0):
     
     if check:
        latest_log = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
-       latest_log.flow = flow + 1
+       latest_log.flow = latest_log.flow + 1
        db.session.commit()
     else: 
         nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
         db.session.add(nuevo_registro)
         db.session.commit()
     
-    
-    
-    
-
 def recibir_mensajes(req):
     try:
         req = request.get_json()
@@ -97,7 +93,7 @@ def recibir_mensajes(req):
                 if "text" in messages:
                     texto = messages["text"]["body"]
                     numero = messages["from"]
-                    agregar_txt_num_log(json.dumps(messages), numero, 0)  #Guardar log en base de datos
+                    agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
                     
                     flowx = db.session.query(Log).filter_by(number=numero).order_by(Log.fecha_y_hora.desc()).first()
                     latest_log = flowx.flow
