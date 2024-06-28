@@ -58,17 +58,7 @@ def agregar_txt_num_log(texto, number, flow = 1):
     db.session.add(nuevo_registro)
     db.session.commit()
 
-def check_flow(number):
-    latest_log = db.session.query(Log).filter_by(numero=number).order_by(Log.fecha_y_hora.desc()).first()
-
-    if latest_log:
-        return latest_log.flow
-    else:
-        return 0
-    
-
 def recibir_mensajes(req):
-    flowx = 10
     try:
         req = request.get_json()
         entry = req['entry'][0]
@@ -87,7 +77,6 @@ def recibir_mensajes(req):
                     if tipo_interactivo == "button_reply":
                         texto = messages["interactive"]["button_reply"]["id"]
                         numero = messages["from"]
-                        
                         enviar_mensajes_wsp(texto, numero)
                     
                     elif tipo_interactivo == "list_reply":
@@ -98,9 +87,7 @@ def recibir_mensajes(req):
                     texto = messages["text"]["body"]
                     numero = messages["from"]
                     enviar_mensajes_wsp(texto, numero)
-                    flowx = check_flow(numero)
-                    
-                agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
+                    agregar_txt_num_log(json.dumps(messages), numero, 10)  #Guardar log en base de datos
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
@@ -116,7 +103,7 @@ def enviar_mensajes_wsp(texto, numero):
             "to": numero,
             "text": {
                 "preview_url": False,
-                "body": "🤖 Hola, Washa."
+                "body": "🤖 Hola, Wascha."
             }
         }
     
