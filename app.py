@@ -95,7 +95,8 @@ def recibir_mensajes(req):
                     numero = messages["from"]
                     flowx = get_flow(numero)
                     send_wsp(texto, numero, flowx)
-                    sen2db(json.dumps(messages), numero)  #Guardar log en base de datos
+            
+            sen2db(json.dumps(messages), numero)  #Guardar log en base de datos
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
@@ -103,9 +104,9 @@ def recibir_mensajes(req):
 
 def send_wsp(texto, numero, flow):
     texto = texto.lower()
-    flow = flow
+    flowx = flow
     
-    match flow:
+    match flowx:
         case 0:
             if "hola" in texto:
                 data = {
@@ -142,7 +143,7 @@ def send_wsp(texto, numero, flow):
                     }
                 }
                 sen2db(texto, numero, 1)
-
+    sen2db(texto, numero, flowx)
     data = json.dumps(data) # Convertir el diccionario en formato JSON
 
     headers = {
@@ -156,7 +157,7 @@ def send_wsp(texto, numero, flow):
         response = connection.getresponse()
         print(response.status, response.reason)
     except Exception as e:
-        agregar_txt_num_log(json.dumps(e), "")
+        sen2db(json.dumps(e), "")
     finally:
         connection.close()
 
