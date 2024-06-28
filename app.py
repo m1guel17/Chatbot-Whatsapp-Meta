@@ -15,8 +15,12 @@ db = SQLAlchemy(app)
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha_y_hora = db.Column(db.DateTime, default = datetime.utcnow)
-    texto = db.Column(db.TEXT)
-    number = db.Column(db.TEXT)
+    texto = db.Column(db.TEXT, default="x")
+    number = db.Column(db.TEXT, default="x")
+    dni = db.Column(db.TEXT, default="x")
+    nombre = db.Column(db.TEXT, default="x")
+    cliente = db.Column(db.TEXT, default="x")
+    sucursal = db.Column(db.TEXT, default="x")
     flow = db.Column(db.Integer, default=0)
 
 with app.app_context():   # Crear la tabla si no existe
@@ -53,18 +57,22 @@ def verificar_token(req):
     else:
         return jsonify({'error':'Token Invalido'}),401
 
-def agregar_txt_num_log(texto, number, flow = 0):
+def check_flow(texto, number, dni, nombre, cliente, sucursal, flow = 0):
     check = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
-    
     if check:
-       latest_log = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
-       latest_log.flow = latest_log.flow + 1
-       db.session.commit()
+        try:
+            if int(dni) and len(dni) == 8:
+                check.flow = check.flow + 1
+                check.dni = dni
+                db.session.commit()
+        except Exception as e:
+            check.flow = check.flow
+            db.session.commit()
     else: 
-        nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
+        nuevo_registro = Log(number = number, flow = flow) # Guardar el mensaje en la base de datos
         db.session.add(nuevo_registro)
         db.session.commit()
-    
+
 def recibir_mensajes(req):
     try:
         req = request.get_json()
@@ -93,7 +101,7 @@ def recibir_mensajes(req):
                 if "text" in messages:
                     texto = messages["text"]["body"]
                     numero = messages["from"]
-                    agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
+                    check_flow(texto, numero, texto, texto, texto, texto)  #Guardar log en base de datos
                     
                     flowx = db.session.query(Log).filter_by(number=numero).order_by(Log.fecha_y_hora.desc()).first()
                     latest_log = flowx.flow
@@ -120,14 +128,14 @@ def send_wsp(texto, numero, flow):
                     }
                 }
         case 1:
-            if int(texto) and len(texto) != 8:
+            if int(texto) and len(texto) == 8:
                 data = {
                     "messaging_product": "whatsapp",
                     "recipient_type": "individual",
                     "to": numero,
                     "text": {
                         "preview_url": False,
-                        "body": "Parece que tu DNI no es válido pusiste: "+ texto
+                        "body": "Así mismo dame tu nombre"
                     }
                 }
             else:
@@ -137,7 +145,7 @@ def send_wsp(texto, numero, flow):
                     "to": numero,
                     "text": {
                         "preview_url": False,
-                        "body": "Así mismo dame tu nombre"
+                        "body": "Parece que tu DNI no es válido pusiste: "+ texto
                     }
                 }
         case 2:
@@ -188,7 +196,7 @@ def send_wsp(texto, numero, flow):
         response = connection.getresponse()
         print(response.status, response.reason)
     except Exception as e:
-        agregar_txt_num_log(json.dumps(e), numero)
+        check_flow(json.dumps(e), numero)
     finally:
         connection.close()
 
