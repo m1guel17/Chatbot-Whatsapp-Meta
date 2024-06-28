@@ -27,32 +27,17 @@ def ordenar_por_fecha_y_hora(registros):
 
 @app.route('/')
 
-def index():
+def index(): #ORDENAR LISTA
     registros = Log.query.all()
     registros_ordenados = ordenar_por_fecha_y_hora(registros)
     return render_template('index.html', registros=registros_ordenados);
 
-mensajes_log = []
 # Función para agregar mensajes y guardar en la base de datos
-def agregar_mensajes_log(texto):
-    mensajes_log.append(texto)
-    nuevo_registro = Log(texto=texto) # Guardar el mensaje en la base de datos
-    db.session.add(nuevo_registro)
-    db.session.commit()
-    
-mensajes_log2 = []
-number_log2 = []
-# Función para agregar mensajes y guardar en la base de datos
-def agregar_txt_num_log(texto, number):
-    mensajes_log2.append(texto)
-    number_log2.append(number)
-    nuevo_registro = Log(texto = texto, number = number) # Guardar el mensaje en la base de datos
+def sen2db(texto, number, flow = 0):
+    nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
     db.session.add(nuevo_registro)
     db.session.commit()
 
-
-
-# Token de verificación para la configuración
 TOKEN = "TOKENX"
 
 @app.route('/webhook', methods=['GET','POST'])
@@ -73,6 +58,10 @@ def verificar_token(req):
     else:
         return jsonify({'error':'Token Invalido'}),401
 
+def get_flow(numero):
+    latest_log = db.session.query(Log).filter_by(number = numero).order_by(Log.fecha_y_hora.desc()).first()
+    return latest_log.flow
+
 def recibir_mensajes(req):
     try:
         req = request.get_json()
@@ -92,38 +81,68 @@ def recibir_mensajes(req):
                     if tipo_interactivo == "button_reply":
                         texto = messages["interactive"]["button_reply"]["id"]
                         numero = messages["from"]
-                        enviar_mensajes_wsp(texto, numero)
+                        flowx = get_flow(numero)
+                        send_wsp(texto, numero, flowx)
                     
                     elif tipo_interactivo == "list_reply":
                         texto = messages["interactive"]["list_reply"]["id"]
                         numero = messages["from"]
-                        enviar_mensajes_wsp(texto, numero)
-                    agregar_mensajes_log(json.dumps(messages))  #Guardar log en base de datos
+                        flowx = get_flow(numero)
+                        send_wsp(texto, numero, flowx)
 
                 if "text" in messages:
                     texto = messages["text"]["body"]
                     numero = messages["from"]
-                    enviar_mensajes_wsp(texto, numero)
-                    agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
+                    flowx = get_flow(numero)
+                    send_wsp(texto, numero, flowx)
+                    sen2db(json.dumps(messages), numero)  #Guardar log en base de datos
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
         return jsonify({'message':'EVENT_RECEIVED'})
 
-def enviar_mensajes_wsp(texto, numero):
+def send_wsp(texto, numero, flow):
     texto = texto.lower()
-
-    if "hola" in texto:
-        data = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": numero,
-            "text": {
-                "preview_url": False,
-                "body": "🤖 Hola, Washa."
-            }
-        }
+    flow = flow
     
+    match flow:
+        case 0:
+            if "hola" in texto:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "🤖 Hola, Washa. dame tu dni"
+                    }
+                }
+                sen2db(texto, numero, 1)
+        
+        case 1:
+            if int(texto) and len(texto) == 8:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "bien tu dni es" + texto
+                    }
+                }
+                sen2db(texto, numero, 2)
+            else:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "Tu dni no es correcto, pusiste" + texto + "serio pe cholo. Escribe nuevamente tu dni"
+                    }
+                }
+                sen2db(texto, numero, 1)
+
     data = json.dumps(data) # Convertir el diccionario en formato JSON
 
     headers = {
@@ -137,7 +156,7 @@ def enviar_mensajes_wsp(texto, numero):
         response = connection.getresponse()
         print(response.status, response.reason)
     except Exception as e:
-        agregar_mensajes_log(json.dumps(e))
+        agregar_txt_num_log(json.dumps(e), "")
     finally:
         connection.close()
 
