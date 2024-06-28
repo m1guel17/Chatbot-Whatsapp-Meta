@@ -106,6 +106,17 @@ def send_wsp(texto, numero, flow):
     texto = texto.lower()
     flowx = flow
     
+    data = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": numero,
+            "text": {
+                    "preview_url": False,
+                    "body": "Danasaoa" + str(flowx)
+                    }
+            }
+    sen2db(texto, numero, 1)
+    
     match flowx:
         case 0:
             if "hola" in texto:
