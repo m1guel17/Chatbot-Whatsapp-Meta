@@ -148,7 +148,7 @@ def send_wsp(texto, numero, flow):
 
     headers = {
         "Content-Type" : "application/json",
-        "Authorization" : "Bearer EAAOdZCMIRR5IBOwcYxExIUwj0VaX5PPW8ZC8OEYWLZBQPTZCXTkyCtiXdMLWBHgals4xFWaJS4Gpbwa7xnvdJZAxKUPRz5h5eQotA2TkHZBhBdbOwUfT2FrL6OSaGVQFHV4WF5DEOKJynOVFYZBJDZBk82ZCQXA0j4H8UUVKTLPIpWfd3dl4bkGUWqLuKMNvU0PNpZBOagHXsJCyZApQmME4ZBoZD"
+        "Authorization" : "EAAOdZCMIRR5IBO4JHRJASC5ux6aPT4z0xQycPx319k1nApsZCZCWRhLK4vn25Sw7VO5CZBvwKiIMgJrqYDjZAZBDh5yYRlBJQo6AAiZACMFO3bYm8DfLLHgflOCQoAs9OzlgpZBCN3rrBnT4IoqfrkgEW0TbjLnjiUPGhWPt7nBmbFA9QZAOOqQvzapdc07OLvRfI9r8LGlU3RynZCIAnuZCvMZD"
     }
     connection = http.client.HTTPSConnection("graph.facebook.com")
 
