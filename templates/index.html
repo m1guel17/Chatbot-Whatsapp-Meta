@@ -28,7 +28,8 @@
             <th>id</th>
             <th>Fecha y Hora</th>
             <th>Mensaje</th>
-            -<th>Numero</th>
+            <th>Numero</th>
+            <th>Flow</th>
         </tr>
         {%for registro in registros %}
             <tr>
@@ -36,6 +37,7 @@
                 <td>{{registro.fecha_y_hora}}</td>
                 <td>{{registro.texto}}</td>
                 <td>{{registro.number}}</td>
+                <td>{{registro.flow}}</td>
             </tr>
         {% endfor %}
     </table>
