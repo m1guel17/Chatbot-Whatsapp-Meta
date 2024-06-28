@@ -32,19 +32,6 @@ def index():
     registros_ordenados = ordenar_por_fecha_y_hora(registros)
     return render_template('index.html', registros=registros_ordenados);
 
-mensajes_log = []
-# Función para agregar mensajes y guardar en la base de datos
-def agregar_mensajes_log(texto):
-    mensajes_log.append(texto)
-    nuevo_registro = Log(texto=texto) # Guardar el mensaje en la base de datos
-    db.session.add(nuevo_registro)
-    db.session.commit()
-    
-mensajes_log2 = []
-number_log2 = []
-
-
-
 # Token de verificación para la configuración
 TOKEN = "TOKENX"
 
@@ -67,8 +54,6 @@ def verificar_token(req):
         return jsonify({'error':'Token Invalido'}),401
 
 def agregar_txt_num_log(texto, number, flow = 1):
-    mensajes_log2.append(texto)
-    number_log2.append(number)
     nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
     db.session.add(nuevo_registro)
     db.session.commit()
@@ -98,13 +83,12 @@ def recibir_mensajes(req):
                         texto = messages["interactive"]["list_reply"]["id"]
                         numero = messages["from"]
                         enviar_mensajes_wsp(texto, numero)
-                    agregar_mensajes_log(json.dumps(messages))  #Guardar log en base de datos
-
                 if "text" in messages:
                     texto = messages["text"]["body"]
                     numero = messages["from"]
                     enviar_mensajes_wsp(texto, numero)
-                    agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
+                    
+                agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
@@ -137,7 +121,7 @@ def enviar_mensajes_wsp(texto, numero):
         response = connection.getresponse()
         print(response.status, response.reason)
     except Exception as e:
-        agregar_mensajes_log(json.dumps(e))
+        agregar_txt_num_log(json.dumps(e), numero)
     finally:
         connection.close()
 
