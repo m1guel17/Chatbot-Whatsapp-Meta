@@ -41,5 +41,23 @@
             </tr>
         {% endfor %}
     </table>
+
+    <h2>Tabla N°2</h2>
+    <table>
+        <tr>
+            <th>id</th>
+            <th>Fecha y Hora</th>
+            <th>Mensaje</th>
+            -<th>Numero</th>
+        </tr>
+        {%for registro in registros %}
+            <tr>
+                <td>{{registro.id}}</td>
+                <td>{{registro.fecha_y_hora}}</td>
+                <td>{{registro.texto}}</td>
+                <td>{{registro.number}}</td>
+            </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
