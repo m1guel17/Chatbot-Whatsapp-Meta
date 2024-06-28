@@ -60,16 +60,45 @@ def verificar_token(req):
 def check_flow(texto, number, dni, nombre, cliente, sucursal, flow = 0):
     check = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
     if check:
-        try:
-            if int(dni) and len(dni) == 8:
+        flag = check.flow 
+        match flag:
+            case 0:
+                try:
+                    int(dni)
+                    
+                except Exception as e:
+                    check.flow = 404
+                    db.session.commit()
+            case 1:
+                check.nombre = nombre
                 check.flow = check.flow + 1
-                check.dni = dni
                 db.session.commit()
-        except Exception as e:
-            check.flow = check.flow
-            db.session.commit()
+                
+            case 2:
+                check.cliente = cliente 
+                check.flow = check.flow + 1
+                db.session.commit()
+            case 3:
+                check.sucursal = sucursal 
+                check.flow = check.flow + 1
+                db.session.commit()
+            case 404:
+                try:
+                    if int(dni) and len(dni) == 8:
+                        check.dni = dni
+                        check.flow = 1
+                        db.session.commit()
+                    else:
+                        check.flow = 404
+                        db.session.commit()
+                except Exception as e:
+                    check.flow = 404
+                    db.session.commit()
+            case _:
+                check.flow = check.flow + 1
+                db.session.commit()
     else: 
-        nuevo_registro = Log(number = number, flow = flow) # Guardar el mensaje en la base de datos
+        nuevo_registro = Log(texto = texto, number = number, dni = dni, nombre = nombre, cliente = cliente, sucursal = sucursal, flow = flow) # Guardar el mensaje en la base de datos
         db.session.add(nuevo_registro)
         db.session.commit()
 
@@ -128,35 +157,26 @@ def send_wsp(texto, numero, flow):
                     }
                 }
         case 1:
-            if int(texto) and len(texto) == 8:
-                data = {
-                    "messaging_product": "whatsapp",
-                    "recipient_type": "individual",
-                    "to": numero,
-                    "text": {
-                        "preview_url": False,
-                        "body": "Así mismo dame tu nombre"
-                    }
+            data = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": numero,
+                "text": {
+                    "preview_url": False,
+                    "body": "Así mismo dame tu nombre"
                 }
-            else:
-                data = {
-                    "messaging_product": "whatsapp",
-                    "recipient_type": "individual",
-                    "to": numero,
-                    "text": {
-                        "preview_url": False,
-                        "body": "Parece que tu DNI no es válido pusiste: "+ texto
-                    }
-                }
+            }
         case 2:
             if texto:
+                texto = texto.split()
+                texto = texto[0]
                 data = {
                     "messaging_product": "whatsapp",
                     "recipient_type": "individual",
                     "to": numero,
                     "text": {
                         "preview_url": False,
-                        "body": " #nombre un gusto, dame tu cliente: "
+                        "body": texto + " un gusto, dame tu cliente: "
                     }
                 }
         case 3:
@@ -181,8 +201,17 @@ def send_wsp(texto, numero, flow):
                         "body": " Perfecto"
                     }
                 }
-    
-    
+        case 404:
+            data = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": numero,
+                "text": {
+                    "preview_url": False,
+                    "body": "Parece que tu DNI no es válido pusiste: "+ texto
+                }
+            }
+
     data = json.dumps(data) # Convertir el diccionario en formato JSON
 
     headers = {

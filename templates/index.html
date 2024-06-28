@@ -29,6 +29,10 @@
             <th>Fecha y Hora</th>
             <th>Mensaje</th>
             <th>Numero</th>
+            <th>DNI</th>
+            <th>Nombre</th>
+            <th>Cliente</th>
+            <th>Sucursal</th>
             <th>Flow</th>
         </tr>
         {%for registro in registros %}
@@ -37,6 +41,10 @@
                 <td>{{registro.fecha_y_hora}}</td>
                 <td>{{registro.texto}}</td>
                 <td>{{registro.number}}</td>
+                <td>{{registro.dni}}</td>
+                <td>{{registro.nombre}}</td>
+                <td>{{registro.cliente}}</td>
+                <td>{{registro.sucursal}}</td>
                 <td>{{registro.flow}}</td>
             </tr>
         {% endfor %}
