@@ -53,10 +53,21 @@ def verificar_token(req):
     else:
         return jsonify({'error':'Token Invalido'}),401
 
-def agregar_txt_num_log(texto, number, flow = 1):
-    nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
-    db.session.add(nuevo_registro)
-    db.session.commit()
+def agregar_txt_num_log(texto, number, flow = 0):
+    check = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
+    
+    if check:
+       latest_log = db.session.query(Log).filter_by(number=number).order_by(Log.fecha_y_hora.desc()).first()
+       latest_log.flow = flow + 1
+       db.session.commit()
+    else: 
+        nuevo_registro = Log(texto = texto, number = number, flow = flow) # Guardar el mensaje en la base de datos
+        db.session.add(nuevo_registro)
+        db.session.commit()
+    
+    
+    
+    
 
 def recibir_mensajes(req):
     try:
@@ -65,7 +76,7 @@ def recibir_mensajes(req):
         changes = entry['changes'][0]
         value = changes['value']
         objeto_mensaje = value['messages']
-
+        
         if objeto_mensaje:
             messages = objeto_mensaje[0]
             
@@ -77,35 +88,53 @@ def recibir_mensajes(req):
                     if tipo_interactivo == "button_reply":
                         texto = messages["interactive"]["button_reply"]["id"]
                         numero = messages["from"]
-                        enviar_mensajes_wsp(texto, numero)
+                        send_wsp(texto, numero)
                     
                     elif tipo_interactivo == "list_reply":
                         texto = messages["interactive"]["list_reply"]["id"]
                         numero = messages["from"]
-                        enviar_mensajes_wsp(texto, numero)
+                        send_wsp(texto, numero)
                 if "text" in messages:
                     texto = messages["text"]["body"]
                     numero = messages["from"]
-                    enviar_mensajes_wsp(texto, numero)
-                    agregar_txt_num_log(json.dumps(messages), numero, 10)  #Guardar log en base de datos
+                    agregar_txt_num_log(json.dumps(messages), numero, 0)  #Guardar log en base de datos
+                    
+                    flowx = db.session.query(Log).filter_by(number=numero).order_by(Log.fecha_y_hora.desc()).first()
+                    latest_log = flowx.flow
+                    
+                    send_wsp(texto, numero, latest_log)
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
         return jsonify({'message':'EVENT_RECEIVED'})
 
-def enviar_mensajes_wsp(texto, numero):
+def send_wsp(texto, numero, flow):
     texto = texto.lower()
-
-    if "hola" in texto:
-        data = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": numero,
-            "text": {
-                "preview_url": False,
-                "body": "🤖 Hola, Wascha."
+    
+    if flow == 0:
+        if "hola" in texto:
+            data = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": numero,
+                "text": {
+                    "preview_url": False,
+                    "body": "🤖 Hola, Wascha. Valor de flow 0"
+                }
             }
-        }
+    else:
+        if "hola" in texto:
+            data = {
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": numero,
+                "text": {
+                    "preview_url": False,
+                    "body": "Valor de flow 1"
+                }
+            }
+    
+    
     
     data = json.dumps(data) # Convertir el diccionario en formato JSON
 
