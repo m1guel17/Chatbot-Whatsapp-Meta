@@ -111,29 +111,72 @@ def recibir_mensajes(req):
 def send_wsp(texto, numero, flow):
     texto = texto.lower()
     
-    if flow == 0:
-        if "hola" in texto:
-            data = {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": numero,
-                "text": {
-                    "preview_url": False,
-                    "body": "🤖 Hola, Wascha. Valor de flow 0"
+    match flow:
+        case 0:
+            if "hola" in texto:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "Hola Te Saluda Robotín, asistente de G4S (...) \n para ayudarte mejor dame tu DNI: "
+                    }
                 }
-            }
-    else:
-        if "hola" in texto:
-            data = {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": numero,
-                "text": {
-                    "preview_url": False,
-                    "body": "Valor de flow 1"
+        case 1:
+            if int(texto) and len(texto) != 8:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "Parece que tu DNI no es válido pusiste: "+ texto
+                    }
                 }
-            }
-    
+            else:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": "Así mismo dame tu nombre"
+                    }
+                }
+        case 2:
+            if texto:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": " #nombre un gusto, dame tu cliente: "
+                    }
+                }
+        case 3:
+            if texto:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": " finalmente tu sucursal "
+                    }
+                }
+        case 4:
+            if texto:
+                data = {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": numero,
+                    "text": {
+                        "preview_url": False,
+                        "body": " Perfecto"
+                    }
+                }
     
     
     data = json.dumps(data) # Convertir el diccionario en formato JSON
