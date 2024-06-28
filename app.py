@@ -100,7 +100,7 @@ def recibir_mensajes(req):
                     enviar_mensajes_wsp(texto, numero)
                     flowx = check_flow(numero)
                     
-                agregar_txt_num_log(json.dumps(messages), numero + " - "+ str(type(flowx)) + str(flowx))  #Guardar log en base de datos
+                agregar_txt_num_log(json.dumps(messages), numero)  #Guardar log en base de datos
         
         return jsonify({'message':'EVENT_RECEIVED'})
     except Exception as e:
