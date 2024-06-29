@@ -15,13 +15,14 @@ db = SQLAlchemy(app)
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha_y_hora = db.Column(db.DateTime, default = datetime.utcnow)
-    texto = db.Column(db.TEXT, default="x")
-    number = db.Column(db.TEXT, default="x")
-    dni = db.Column(db.TEXT, default="x")
-    nombre = db.Column(db.TEXT, default="x")
-    cliente = db.Column(db.TEXT, default="x")
-    sucursal = db.Column(db.TEXT, default="x")
+    texto = db.Column(db.TEXT, default = "x")
+    number = db.Column(db.TEXT, default = "x")
+    dni = db.Column(db.TEXT, default = "x")
+    nombre = db.Column(db.TEXT, default = "x")
+    cliente = db.Column(db.TEXT, default = "x")
+    sucursal = db.Column(db.TEXT, default = "x")
     flow = db.Column(db.Integer, default=0)
+    
 
 with app.app_context():   # Crear la tabla si no existe
     db.create_all()
