@@ -3,6 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import json
 import http.client
+import os
+token_api = os.environ.get('TOKENAPI')
+token_api = "Bearer " + token_api
+connection_link = os.environ.get('LINK')
 
 app = Flask(__name__)
 
@@ -217,12 +221,12 @@ def send_wsp(texto, numero, flow):
 
     headers = {
         "Content-Type" : "application/json",
-        "Authorization" : "Bearer EAAOdZCMIRR5IBOZBixtcILQQLVMkeH3UqUKu9rAKTZA0nCEpUePgoJLBYRv4ty7pxGzYGVe2A2jn5bl6XkRCXpHMQRNtTSNWjdKWxtZACtLj5w3mYM90Eq0rQp7CniRYhb71ZALgPH5tqVdErKKt7olPBzc3gS6RtBuDZA0xpwZCTsEM8qqyFwO3FJXr2kdiZAaYZArIWkPmJamsuykUIZBRQZD"
+        "Authorization" : token_api
     }
     connection = http.client.HTTPSConnection("graph.facebook.com")
 
     try:
-        connection.request("POST","/v19.0/378273298696469/messages", data, headers)
+        connection.request("POST",connection_link, data, headers)
         response = connection.getresponse()
         print(response.status, response.reason)
     except Exception as e:
